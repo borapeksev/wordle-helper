@@ -76,7 +76,7 @@ while True:
 
     elif secim == "5":
         print(messages[lang]["filtered_words"])
-        eslesenler = []
+        eslesenler = set()
         for kelime in kelimeler:
             if len(kelime) != 5:
                 continue
@@ -102,7 +102,7 @@ while True:
                     break
 
             if uyuyor:
-                eslesenler.append(kelime)
+                eslesenler.add(kelime)
 
         if eslesenler:
             for k in sorted(eslesenler):
