@@ -1,7 +1,7 @@
 import random
 import json
 
-# Dil paketleri
+# Language packages
 messages = {
     "tr": {
         "menu": "\nMenü:\n1 - Rastgele kelime\n2 - Bilinen harfleri gir\n3 - Olmayan harfleri gir\n4 - Yanlış pozisyondaki harfleri gir\n5 - Eşleşen kelimeleri göster\n0 - Çıkış",
@@ -33,86 +33,82 @@ messages = {
     }
 }
 
-# Dil seçimi
-lang = ""
-while lang not in ["tr", "en"]:
-    lang = input("Dil seçiniz / Select language (tr/en): ").lower()
+# Language selection
+language = ""
+while language not in ["tr", "en"]:
+    language = input("Dil seçiniz / Select language (tr/en): ").lower()
 
 with open("words.txt", "r", encoding="utf-8") as f:
-    kelimeler = json.load(f)
+    words = json.load(f)
 
-bilinen_harfler = ["_"] * 5
-olmayan_harfler = set()
-yanlis_pozisyonlar = []  # [(letter, index), ...]
+known_letters = ["_"] * 5
+absent_letters = set()
+wrong_positions = []  # [(letter, index), ...]
 
 while True:
-    
-    print(messages[lang]["menu"])
-    secim = input(messages[lang]["select"])
+    print(messages[language]["menu"])
+    choice = input(messages[language]["select"])
 
-    if secim == "1":
-        print(messages[lang]["random_word"], random.choice(kelimeler))
+    if choice == "1":
+        print(messages[language]["random_word"], random.choice(words))
 
-    elif secim == "2":
-        girdi = input(messages[lang]["known_letters_input"]).lower().split(",")
-        if len(girdi) == 5:
-            bilinen_harfler = girdi
+    elif choice == "2":
+        entry = input(messages[language]["known_letters_input"]).lower().split(",")
+        if len(entry) == 5:
+            known_letters = entry
         else:
-            print(messages[lang]["known_letters_error"])
+            print(messages[language]["known_letters_error"])
 
-    elif secim == "3":
-        girdi = input(messages[lang]["absent_letters_input"]).lower().split(",")
-        olmayan_harfler.update(girdi)
+    elif choice == "3":
+        entry = input(messages[language]["absent_letters_input"]).lower().split(",")
+        absent_letters.update(entry)
 
-    elif secim == "4":
-        girdi = input(messages[lang]["wrong_pos_input"]).lower().split(",")
-        yanlis_pozisyonlar.clear()
-        for item in girdi:
+    elif choice == "4":
+        entry = input(messages[language]["wrong_pos_input"]).lower().split(",")
+        wrong_positions.clear()
+        for item in entry:
             try:
-                harf, pos = item.split("-")
-                yanlis_pozisyonlar.append((harf, int(pos)-1))
+                letter, pos = item.split("-")
+                wrong_positions.append((letter, int(pos)-1))
             except:
-                print(messages[lang]["wrong_pos_error"], item)
+                print(messages[language]["wrong_pos_error"], item)
 
-    elif secim == "5":
-        print(messages[lang]["filtered_words"])
-        eslesenler = set()
-        for kelime in kelimeler:
-            if len(kelime) != 5:
+    elif choice == "5":
+        print(messages[language]["filtered_words"])
+        matching_words = set()
+        for word in words:
+            if len(word) != 5:
                 continue
 
-            if any(harf in kelime for harf in olmayan_harfler):
+            if any(letter in word for letter in absent_letters):
                 continue
 
-            yanlis_var = False
-            for harf, pos in yanlis_pozisyonlar:
-                if harf not in kelime:
-                    yanlis_var = True
+            wrong_found = False
+            for letter, pos in wrong_positions:
+                if letter not in word or word[pos] == letter:
+                    wrong_found = True
                     break
-                if kelime[pos] == harf:
-                    yanlis_var = True
-                    break
-            if yanlis_var:
+            if wrong_found:
                 continue
 
-            uyuyor = True
+            matches_pattern = True
             for i in range(5):
-                if bilinen_harfler[i] != "_" and kelime[i] != bilinen_harfler[i]:
-                    uyuyor = False
+                if known_letters[i] != "_" and word[i] != known_letters[i]:
+                    matches_pattern = False
                     break
 
-            if uyuyor:
-                eslesenler.add(kelime)
+            if matches_pattern:
+                matching_words.add(word)
 
-        if eslesenler:
-            for k in sorted(eslesenler):
-                print("✅", k)
+        if matching_words:
+            for w in sorted(matching_words):
+                print("✅", w)
         else:
-            print(messages[lang]["no_match"])
+            print(messages[language]["no_match"])
 
-    elif secim == "0":
-        print(messages[lang]["exit"])
+    elif choice == "0":
+        print(messages[language]["exit"])
         break
 
     else:
-        print(messages[lang]["invalid_choice"])
+        print(messages[language]["invalid_choice"])
